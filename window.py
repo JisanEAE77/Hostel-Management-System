@@ -6,135 +6,102 @@ from tkinter import ttk
 from tkinter import messagebox
 from typing import Counter
 
+
+#USER Class
 class User:
     def __init__(self):
         self.role = 0
         self.uername = ""
         self.password = ""
 
+    #USER Login Validation
     def validateLogin(self):
         
         q = "SELECT * FROM USER WHERE USERNAME = '" + self.username + "' AND PASSWORD = '" + self.password + "' AND ROLE = '" + str(self.role) + "';"
         cur.execute(q)
 
         rows = cur.fetchall()
-        if len(rows) == 0:
+        if len(rows) > 0:
             print("Login Successful!")
         else:
             print("Login Failed!")
         return len(rows) == 0
 
 
-global users 
-conn = sqlite3.connect('uwe.sqlite')
-cur = conn.cursor()
+#HALL Class
+class Hall:
+    def __init__(self):
+        self.lease_number = ""
+        self.hall_name = ""
+        self.hall_number = ""
+        self.room_number = ""
+        self.student_id = ""
+        self.student_name = ""
+        self.occupancy_status = ""
+        self.cleaning_status = ""
+        self.rent_per_month = ""
+        self.duration = ""
 
-def btn_clicked():
-    users = User()
-    def delete():
-        selected = my_tree.focus()
-        values = ('', ln2_entry.get(), ln3_entry.get(), ln4_entry.get(), '', '', "Unoccupied", co.get(), ln8_entry.get(), '')
-        my_tree.item(selected, text="", values=values)
 
-        q = "UPDATE HALL SET LEASE_NUMBER = '', STUDENT_ID = '', STUDENT_NAME = '', DURATION = '', OCCUPANCY_STATUS = 'Unoccupied' WHERE HALL_NAME = '" + ln2_entry.get() + "' AND HALL_NUMBER = '" + ln3_entry.get() + "' AND ROOM_NUMBER = '" + ln4_entry.get() + "';"
+    #Update HALL Class's Attributes
+    def select(self, lease_number, hall_name, hall_number, room_number, student_id, student_name, occupancy_status, cleaning_status, rent_per_month, duration):
+        self.lease_number = lease_number
+        self.hall_name = hall_name
+        self.hall_number = hall_number
+        self.room_number = room_number
+        self.student_id = student_id
+        self.student_name = student_name
+        self.occupancy_status = occupancy_status
+        self.cleaning_status = cleaning_status
+        self.rent_per_month = rent_per_month
+        self.duration = duration
 
-        cur.execute(q)
-        conn.commit()
-
-        ln2_entry.config(state="normal")
-        ln3_entry.config(state="normal")
-        ln4_entry.config(state="normal")
-        ln6_entry.config(state="normal")
-        ln7_entry.config(state="normal")
-        ln8_entry.config(state="normal")
-
-        ln1_entry.delete(0, END)
-        ln2_entry.delete(0, END)
-        ln3_entry.delete(0, END)
-        ln4_entry.delete(0, END)
-        ln5_entry.delete(0, END)
-        ln6_entry.delete(0, END)
-        co.set("                            ")
-        ln8_entry.delete(0, END)
-        ln9_entry.delete(0, END)
-        ln10_entry.delete(0, END)
-
-        selected= my_tree.focus()
-
-        values = my_tree.item(selected, 'values')
-
-        ln1_entry.insert(0, values[0])
-        ln2_entry.insert(0, values[1])
-        ln3_entry.insert(0, values[2])
-        ln4_entry.insert(0, values[3])
-        ln10_entry.insert(0, values[4])
-        ln5_entry.insert(0, values[5])
-        ln6_entry.insert(0, values[6])
-        co.set(values[7])
-        ln8_entry.insert(0, values[8])
-        ln9_entry.insert(0, values[9])
-
-        ln2_entry.config(state="disable")
-        ln3_entry.config(state="disable")
-        ln4_entry.config(state="disable")
-        ln6_entry.config(state="disable")
-        ln8_entry.config(state="disable")
-
-        if user == "Warden":
-            ln1_entry.config(state="disable")
-            ln5_entry.config(state="disable")
-            ln9_entry.config(state="disable")
-            ln10_entry.config(state="disable")
-
-        if user == "Manager":
-            ln7_entry.config(state="disable")
-
-    def update():
+    #Update Data in Database
+    def update(self, user):
+        print("Vlues", self.lease_number, self.student_id, self.student_name, self.duration)
         if user != "Warden":
-            q = "SELECT * FROM HALL WHERE LEASE_NUMBER = '" + ln1_entry.get() + "' AND HALL_NUMBER = '" + ln3_entry.get() + "' AND ROOM_NUMBER = '" + ln4_entry.get() + "';"
-            cur.execute(q)
+            q = "SELECT * FROM HALL WHERE LEASE_NUMBER = '" + self.lease_number + "' AND HALL_NUMBER = '" + self.hall_number + "' AND ROOM_NUMBER = '" + self.room_number + "';"
 
+            cur.execute(q)
             rows = cur.fetchall()
-            if (co.get() == "Offline" or ln6_entry.get() == "Occupied") and len(rows) == 0:
-                if co.get() == "Offline" and ln6_entry.get() == "Occupied":
+
+            if (self.cleaning_status == "Offline" or self.occupancy_status == "Occupied") and len(rows) == 0:
+                if self.cleaning_status == "Offline" and self.occupancy_status == "Occupied":
                     messagebox.showerror("Room is Occupied and Offline!", "To add Lease the Room shouldn't be Occupied or Offline!")
-                if co.get() == "Offline":
+                if self.cleaning_status == "Offline":
                     messagebox.showerror("Room is Offline!", "To add Lease the Room shouldn't be Offline!")
                 else:
                     messagebox.showerror("Room is Occupied!", "To add Lease the Room shouldn't be Occupied!")
 
                 return 0
 
-            if ln1_entry.get() and ln10_entry.get() and ln5_entry.get() and ln9_entry.get():
+           
 
-                q = "SELECT * FROM HALL WHERE STUDENT_ID = '" + ln10_entry.get() + "' AND HALL_NUMBER != '" + ln3_entry.get() + "' AND ROOM_NUMBER != '" + ln4_entry.get() + "';"
+            if self.lease_number and self.student_id and self.student_name and self.duration:
+
+                q = "SELECT * FROM HALL WHERE STUDENT_ID = '" + self.student_id + "' AND HALL_NUMBER != '" + self.hall_number + "' AND ROOM_NUMBER != '" + self.room_number + "';"
+
                 cur.execute(q)
-
                 rows = cur.fetchall()
 
                 if len(rows) != 0:
                     messagebox.showerror("Student Already Exists!", "Student has been allocated a Room already with this ID!")
                     return 0
 
-                q = "SELECT * FROM HALL WHERE LEASE_NUMBER = '" + ln1_entry.get() + "' AND HALL_NUMBER != '" + ln3_entry.get() + "' AND ROOM_NUMBER != '" + ln4_entry.get() + "';"
-                cur.execute(q)
+                q = "SELECT * FROM HALL WHERE LEASE_NUMBER = '" + self.lease_number + "' AND HALL_NUMBER != '" + self.hall_number + "' AND ROOM_NUMBER != '" + self.room_number + "';"
 
+                cur.execute(q)
                 rows = cur.fetchall()
 
                 if len(rows) != 0:
                     messagebox.showerror("Lease Already Exists!", "Existing list found with this number!")
                     return 0
-            
 
-            
-                selected = my_tree.focus()
-                values = (ln1_entry.get(), ln2_entry.get(), ln3_entry.get(), ln4_entry.get(), ln10_entry.get(), ln5_entry.get(), "Occupied", co.get(), ln8_entry.get(), ln9_entry.get())
-                my_tree.item(selected, text="", values=values)
-
-                q = "UPDATE HALL SET LEASE_NUMBER = '" + ln1_entry.get() + "', STUDENT_ID = '" + ln10_entry.get() + "', STUDENT_NAME = '" + ln5_entry.get() + "', DURATION = '" + ln9_entry.get() + "', OCCUPANCY_STATUS = 'Occupied' WHERE HALL_NAME = '" + ln2_entry.get() + "' AND HALL_NUMBER = '" + ln3_entry.get() + "' AND ROOM_NUMBER = '" + ln4_entry.get() + "';"
+                q = "UPDATE HALL SET LEASE_NUMBER = '" + self.lease_number + "', STUDENT_ID = '" + self.student_id + "', STUDENT_NAME = '" + self.student_name + "', DURATION = '" + self.duration + "', OCCUPANCY_STATUS = 'Occupied' WHERE HALL_NAME = '" + self.hall_name + "' AND HALL_NUMBER = '" + self.hall_number + "' AND ROOM_NUMBER = '" + self.room_number + "';"
 
                 cur.execute(q)
                 conn.commit()
+                return 1
             else:
                 messagebox.showerror("Missing Data!", "Fill up all the required field to update!")
                 return 0
@@ -142,75 +109,86 @@ def btn_clicked():
             
 
         else:
-            selected = my_tree.focus()
-            values = (ln1_entry.get(), ln2_entry.get(), ln3_entry.get(), ln4_entry.get(), ln10_entry.get(), ln5_entry.get(), ln6_entry.get(), co.get(), ln8_entry.get(), ln9_entry.get())
-            my_tree.item(selected, text="", values=values)
 
-            print(co.get())
-
-            q = "UPDATE HALL SET CLEANING_STATUS = '" + co.get() + "' WHERE HALL_NAME = '" + ln2_entry.get() + "' AND HALL_NUMBER = '" + ln3_entry.get() + "' AND ROOM_NUMBER = '" + ln4_entry.get() + "';"
+            q = "UPDATE HALL SET CLEANING_STATUS = '" + self.cleaning_status + "' WHERE HALL_NAME = '" + self.hall_name + "' AND HALL_NUMBER = '" + self.hall_number + "' AND ROOM_NUMBER = '" + self.room_number + "';"
 
             cur.execute(q)
             conn.commit()
 
+            return 2
 
+    #Delete Lease From Database
+    def delete(self, user):
+        if user != "Warden":
+            q = "UPDATE HALL SET LEASE_NUMBER = '', STUDENT_ID = '', STUDENT_NAME = '', DURATION = '', OCCUPANCY_STATUS = 'Unoccupied' WHERE HALL_NAME = '" + self.hall_name + "' AND HALL_NUMBER = '" + self.hall_number + "' AND ROOM_NUMBER = '" + self.room_number + "';"
+
+            cur.execute(q)
+            conn.commit()
+            return 1
+        else:
+            messagebox.showerror("Access Limit!", "Warden can't delete any data!")
+            return 0
+
+
+global users, hall
+users = User()
+hall = Hall()
+
+#Database Connection
+conn = sqlite3.connect('uwe.sqlite')
+cur = conn.cursor()
+
+#Login Button Click -> Action
+def btn_clicked():
+    
+    #Delete Data Function
+    def delete():
+        hall.select(ln1_entry.get(), ln2_entry.get(), ln3_entry.get(), ln4_entry.get(), ln10_entry.get(), ln5_entry.get(), ln6_entry.get(), co.get(), ln8_entry.get(), ln9_entry.get())
+
+        deleteVar = hall.delete(user)
+
+        if deleteVar == 0:
+            return 0
+
+        selected = my_tree.focus()
+        values = ('', ln2_entry.get(), ln3_entry.get(), ln4_entry.get(), '', '', "Unoccupied", co.get(), ln8_entry.get(), '')
+        my_tree.item(selected, text="", values=values)
+
+
+
+    #Update Data Function
+    def update():
+        hall.select(ln1_entry.get(), ln2_entry.get(), ln3_entry.get(), ln4_entry.get(), ln10_entry.get(), ln5_entry.get(), ln6_entry.get(), co.get(), ln8_entry.get(), ln9_entry.get())
+        updatevar = hall.update(user)
+
+        #Check if the user is warden or not
+        if updatevar == 1:
             
-        ln2_entry.config(state="normal")
-        ln3_entry.config(state="normal")
-        ln4_entry.config(state="normal")
-        ln6_entry.config(state="normal")
-        ln7_entry.config(state="normal")
-        ln8_entry.config(state="normal")
+            selected = my_tree.focus()
+            values = (ln1_entry.get(), ln2_entry.get(), ln3_entry.get(), ln4_entry.get(), ln10_entry.get(), ln5_entry.get(), "Occupied", co.get(), ln8_entry.get(), ln9_entry.get())
+            my_tree.item(selected, text="", values=values)
 
-        ln1_entry.delete(0, END)
-        ln2_entry.delete(0, END)
-        ln3_entry.delete(0, END)
-        ln4_entry.delete(0, END)
-        ln5_entry.delete(0, END)
-        ln6_entry.delete(0, END)
-        co.set("                            ")
-        ln8_entry.delete(0, END)
-        ln9_entry.delete(0, END)
-        ln10_entry.delete(0, END)
+        elif updatevar == 2:
+            selected = my_tree.focus()
+            values = (ln1_entry.get(), ln2_entry.get(), ln3_entry.get(), ln4_entry.get(), ln10_entry.get(), ln5_entry.get(), ln6_entry.get(), co.get(), ln8_entry.get(), ln9_entry.get())
+            my_tree.item(selected, text="", values=values)
 
-        selected= my_tree.focus()
+        else:
+            return 0
 
-        values = my_tree.item(selected, 'values')
-
-        ln1_entry.insert(0, values[0])
-        ln2_entry.insert(0, values[1])
-        ln3_entry.insert(0, values[2])
-        ln4_entry.insert(0, values[3])
-        ln10_entry.insert(0, values[4])
-        ln5_entry.insert(0, values[5])
-        ln6_entry.insert(0, values[6])
-        co.set(values[7])
-        ln8_entry.insert(0, values[8])
-        ln9_entry.insert(0, values[9])
-        
-
-        ln2_entry.config(state="disable")
-        ln3_entry.config(state="disable")
-        ln4_entry.config(state="disable")
-        ln6_entry.config(state="disable")
-        ln8_entry.config(state="disable")
-
-        if user == "Warden":
-            ln1_entry.config(state="disable")
-            ln5_entry.config(state="disable")
-            ln9_entry.config(state="disable")
-            ln10_entry.config(state="disable")
-
-        if user == "Manager":
-            ln7_entry.config(state="disable")
-
+    #Select Tree Function
     def select(e):
+
+        ln1_entry.config(state="normal")
         ln2_entry.config(state="normal")
         ln3_entry.config(state="normal")
         ln4_entry.config(state="normal")
+        ln5_entry.config(state="normal")
         ln6_entry.config(state="normal")
         ln7_entry.config(state="normal")
         ln8_entry.config(state="normal")
+        ln9_entry.config(state="normal")
+        ln10_entry.config(state="normal")
 
         ln1_entry.delete(0, END)
         ln2_entry.delete(0, END)
@@ -252,7 +230,6 @@ def btn_clicked():
 
         if user == "Manager":
             ln7_entry.config(state="disable")
-
 
 
     role = n.get()
@@ -271,25 +248,19 @@ def btn_clicked():
         messagebox.showwarning("Invalid User Role!", "Please choose a Role to Login!")
         return 0
 
+    #Validation User Authentication
     isLoginValid = users.validateLogin()
 
 
-    # q = "SELECT * FROM USER WHERE USERNAME = '" + user.username + "' AND PASSWORD = '" + user.password + "' AND ROLE = '" + str(usdrrole) + "';"
-    # cur.execute(q)
-
-    # rows = cur.fetchall()
-
+    #User Login Validation Message
     if isLoginValid:
         messagebox.showerror("Invalid Credential!", "Invalid Username or Password!")
     else:
         messagebox.showinfo("Success", "Login Success!")
         newWindow = Toplevel(window)
  
-        # sets the title of the
-        # Toplevel widget
+
         newWindow.title("UWE " + user + " Dashboard")
-    
-        # sets the geometry of toplevel
         newWindow.geometry("1600x600")
 
         style = ttk.Style()
@@ -297,6 +268,7 @@ def btn_clicked():
         style.configure("Treeview",  background="#093545", foreground="white", rowheight=25, fieldbackground="#D3D3D3")
         style.map('Treeview', background=[('selected', '#093545')])
 
+        #Tree Setup
         tree_frame = Frame(newWindow)
         tree_frame.pack(padx=20)
 
@@ -357,12 +329,12 @@ def btn_clicked():
                 my_tree.insert(parent="", index="end", iid=count, text="", values=record, tags=('oddrow',))
 
             count += 1
-        # A Label widget to show in toplevel
 
         data_frame = LabelFrame(newWindow, text="Record")
         data_frame.pack(fill="x", expand="yes", padx=20)
 
         
+        #Record Entry Boxes
 
         ln2_label = Label(data_frame, text="Hall Name")
         ln2_label.grid(row=0, column=0, padx=10, pady=10)
@@ -454,7 +426,7 @@ def btn_clicked():
         
 
         
-
+        #command buttons to update and delete data
         button_frame = LabelFrame(newWindow, text="Commands")
         button_frame.pack(fill="x", expand="yes", padx=20)
 
@@ -469,6 +441,7 @@ def btn_clicked():
 
 
 
+#Login Page Setup
 
 window = Tk()
 
